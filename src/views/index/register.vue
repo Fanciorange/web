@@ -11,9 +11,19 @@
         <div class="common-input">
           <img :src="MailIcon" class="left-icon">
           <div class="input-view">
-            <input placeholder="请输入邮箱" v-model="tData.loginForm.username" type="text" class="input">
+            <input placeholder="请输入邮箱" v-model="tData.loginForm.email" type="text" class="input">
             <p class="err-view">
             </p>
+          </div>
+          <div class="send-code-btn">
+            <button @click="sendVerificationCode" :disabled="countdownRunning || !tData.loginForm.email" class="code-btn">{{ countdownText }}</button>
+          </div>
+        </div>
+        <div class="common-input" >
+          <img :src="VerificationCodeIcon" class="left-icon">
+          <div class="input-view">
+            <input placeholder="请输入验证码" v-model="tData.loginForm.verificationCode" type="text" class="input">
+            <p class="err-view"></p>
           </div>
         </div>
       </div>
@@ -47,34 +57,39 @@
 </template>
 
 <script setup lang="ts">
-import {userRegisterApi} from '/@/api/index/user'
+import {userRegisterApi,sendVerificationCodeApi} from '/@/api/index/user'
 import {message} from "ant-design-vue";
 import MailIcon from '/@/assets/images/mail-icon.svg';
 import PwdIcon from '/@/assets/images/pwd-icon.svg';
-
+import  VerificationCodeIcon from '/@/assets/images/verificationCodeIcon.svg'
 const router = useRouter();
 
 const tData = reactive({
   loginForm: {
-    username: '',
+    email: '',
     password: '',
-    repassword: ''
+    repassword: '',
+    verificationCode: ''
   }
 })
-
+let countdownRunning = ref(false);
+let countdownSeconds = ref(60);
+let countdownInterval;
+let countdownText = ref('发送验证码');
 const handleRegister = () => {
   console.log('login')
-  if(tData.loginForm.username === ''
+  if(tData.loginForm.email === ''
     || tData.loginForm.password === ''
-    || tData.loginForm.repassword === ''){
+    || tData.loginForm.repassword === ''||tData.loginForm.verificationCode===''){
     message.warn('不能为空！')
     return;
   }
 
   userRegisterApi({
-    username: tData.loginForm.username,
+    email: tData.loginForm.email,
     password: tData.loginForm.password,
-    repassword: tData.loginForm.repassword
+    repassword: tData.loginForm.repassword,
+    code: tData.loginForm.verificationCode
   }).then(res => {
     message.success('注册成功！')
     router.push({name: 'login'})
@@ -84,7 +99,48 @@ const handleRegister = () => {
 }
 
 
+
+const sendVerificationCode = () => {
+  if (!tData.loginForm.email) {
+    message.warn('邮箱不能为空！');
+    return;
+  }
+
+  countdownRunning.value = true;
+  countdownText.value = '发送验证码';
+
+  sendVerificationCodeApi({email: tData.loginForm.email})
+      .then(() => {
+        message.success('验证码已发送成功！');
+        startCountdown();
+      })
+      .catch((err) => {
+        message.error(err.msg || '发送验证码失败，请稍后再试');
+        countdownRunning.value = false;
+      });
+};
+
+const startCountdown = () => {
+  countdownInterval = setInterval(() => {
+    countdownSeconds.value--;
+
+    if (countdownSeconds.value > 0) {
+      countdownText.value = `重新发送(${countdownSeconds.value})`;
+    } else {
+      clearInterval(countdownInterval);
+      countdownRunning.value = false;
+      countdownSeconds.value = 60;
+      countdownText.value = '发送验证码';
+    }
+  }, 1000);
+};
+
+
+
 </script>
+
+
+
 
 <style scoped lang="less">
 div {

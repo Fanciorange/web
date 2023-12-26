@@ -274,6 +274,7 @@ const beforeUpload1 = async (file: File) => {
     let response = await uploadMergeApi(dform)
     modal.form.vedioUrl = response.data;
     modal.form.vttUrl = response.data.replace(/\.mp4$/, '.vtt');
+    modal.form.summaryUrl = response.data.replace(/\.mp4$/, '.txt');
     console.log('分片上传完成');
   } catch (error) {
     console.error('分片上传失败:', error);
@@ -320,7 +321,8 @@ const modal = reactive({
     coverUrl: undefined,
     imageFile: undefined,
     rawFile: undefined,
-    vttUrl: undefined
+    vttUrl: undefined,
+    summaryUrl: undefined
   },
   rules: {
     title: [{ required: true, message: '请输入名称', trigger: 'change' }],
@@ -397,7 +399,6 @@ const handleAdd = () => {
   for (const key in modal.form) {
     modal.form[key] = undefined;
   }
-  modal.form.cover = undefined
 };
 const handleEdit = (record: any) => {
   resetModal();
@@ -473,6 +474,7 @@ const handleOk = () => {
         if(modal.form.vedioUrl) {
           formData.append('vediourl', modal.form.vedioUrl)
           formData.append("vtturl",modal.form.vttUrl)
+          formData.append('summaryurl', modal.form.summaryUrl)
         }
 
         formData.append('description', modal.form.description || '')

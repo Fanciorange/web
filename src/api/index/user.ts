@@ -7,7 +7,8 @@ enum URL {
     userRegister = '/myapp/index/user/register',
     detail = '/myapp/index/user/info',
     updateUserPwd = '/myapp/index/user/updatePwd',
-    updateUserInfo = '/myapp/index/user/update'
+    updateUserInfo = '/myapp/index/user/update',
+    sendVerificationCode = '/myapp/index/user/sendcode'
 }
 interface LoginRes {
     token: string;
@@ -23,5 +24,5 @@ const userLoginApi = async (data: LoginData) => post<any>({ url: URL.userLogin, 
 const userRegisterApi = async (data: any) => post<any>({ url: URL.userRegister, params: {}, data: data });
 const updateUserPwdApi = async (params: any, data:any) => post<any>({ url: URL.updateUserPwd, params: params, data:data });
 const updateUserInfoApi = async (params: any,data: any) => post<any>({ url: URL.updateUserInfo, params:params, data: data, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-
-export { detailApi, userLoginApi, userRegisterApi, updateUserPwdApi, updateUserInfoApi};
+const sendVerificationCodeApi = async (params: any) => post<any>({ url: URL.sendVerificationCode, params: params });
+export { detailApi, userLoginApi, userRegisterApi, updateUserPwdApi, updateUserInfoApi,sendVerificationCodeApi};
